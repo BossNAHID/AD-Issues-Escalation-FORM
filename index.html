@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrybee - Issue Escalation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #F5C518;
+            --primary-hover: #E5B800;
+            --bg-dark: #f5f5f5;
+            --card-bg: #ffffff;
+            --input-bg: #f8f8f8;
+            --text-primary: #2d2d2d;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border: rgba(0, 0, 0, 0.08);
+            --border-focus: rgba(245, 197, 24, 0.5);
+            --error: #e74c3c;
+            --success: #2ecc71;
+            --shadow: rgba(0,0,0,0.08);
+        }
+
+        [data-theme="dark"] {
+            --bg-dark: #2E2B2B;
+            --card-bg: #3A3636;
+            --input-bg: #4A4646;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B8B3B3;
+            --text-muted: #8A8585;
+            --border: rgba(245, 197, 24, 0.15);
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 16px var(--shadow);
+        }
+
+        .header { text-align: center; margin-bottom: 32px; }
+
+        .logo {
+            width: 280px;
+            margin-bottom: 16px;
+            filter: brightness(1.1);
+        }
+
+        [data-theme="light"] .logo {
+            filter: brightness(0.9);
+        }
+
+        .subtitle {
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .divider {
+            width: 40px;
+            height: 3px;
+            background: var(--primary);
+            margin: 0 auto 16px;
+            border-radius: 2px;
+        }
+
+        .title { font-size: 1.5rem; font-weight: 600; }
+
+        .form-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: 0 20px 60px var(--shadow);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group { margin-bottom: 24px; }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        label .required { color: var(--primary); margin-left: 4px; }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="text"]::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23F5C518' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        select option { background: var(--card-bg); color: var(--text-primary); }
+        select:invalid, select option:first-child { color: var(--text-muted); }
+
+        textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+
+        .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; text-align: right; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(245, 197, 24, 0.25);
+        }
+
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-row .submit-btn { margin-top: 0; }
+
+        .call-btn {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            color: var(--text-primary);
+            border: 1.5px solid var(--primary);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .call-btn:hover:not(:disabled) {
+            background: rgba(245, 197, 24, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .call-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        @media (max-width: 420px) {
+            .btn-row { flex-direction: column; }
+        }
+
+        /* Call Request Modal (form-style, reuses modal-overlay) */
+        .call-modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 36px 32px;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            text-align: left;
+        }
+
+        .modal-overlay.show .call-modal-content { transform: scale(1); }
+
+        .call-modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .call-modal-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .call-modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .call-modal-actions .cancel-btn {
+            flex: 1;
+            padding: 14px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .call-modal-actions .cancel-btn:hover { background: var(--border); }
+
+        .call-modal-actions .submit-btn { flex: 1.4; margin-top: 0; }
+
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transform: translateX(150%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 40px var(--shadow);
+        }
+
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: var(--success); color: white; }
+        .toast.error { background: var(--error); color: white; }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Truck Loading Overlay (shown while the issue is being submitted) */
+        .truck-loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .truck-loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .truck-loading-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 28px 36px 22px;
+            width: 272px;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .truck-loading-text {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        .loader {
+            width: 200px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .truckWrapper {
+            width: 200px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
+        }
+
+        .truckBody {
+            width: 130px;
+            height: 61px;
+            margin-bottom: 6px;
+            animation: truckMotion 1s linear infinite;
+        }
+
+        .truckBody svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        @keyframes truckMotion {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(3px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .truckTires {
+            width: 130px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0px 10px 0px 15px;
+            position: absolute;
+            bottom: 0;
+        }
+
+        .truckTires svg {
+            width: 24px;
+            height: 24px;
+            display: block;
+            animation: tireSpin 0.5s linear infinite;
+        }
+
+        @keyframes tireSpin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .truckRoad {
+            width: 100%;
+            height: 1.5px;
+            background-color: var(--text-muted);
+            position: relative;
+            bottom: 0;
+            align-self: flex-end;
+            border-radius: 3px;
+        }
+
+        .truckRoad::before {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            background-color: var(--text-muted);
+            right: -50%;
+            border-radius: 3px;
+            animation: truckRoadAnim 1.4s linear infinite;
+            border-left: 10px solid var(--card-bg);
+        }
+
+        .truckRoad::after {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 100%;
+            background-color: var(--text-muted);
+            right: -65%;
+            border-radius: 3px;
+            animation: truckRoadAnim 1.4s linear infinite;
+            border-left: 4px solid var(--card-bg);
+        }
+
+        @keyframes truckRoadAnim {
+            0% { transform: translateX(0px); }
+            100% { transform: translateX(-350px); }
+        }
+
+        /* Success Popup Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 48px 40px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 36px;
+            color: white;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .modal-message {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .modal-btn {
+            padding: 14px 36px;
+            background: var(--primary);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(245, 197, 24, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .form-container { padding: 28px 20px; }
+            .logo { width: 220px; }
+            .modal-content { padding: 36px 24px; }
+        }
+
+        /* Photo Upload */
+        .photo-upload-box {
+            border: 1.5px dashed var(--border);
+            border-radius: 10px;
+            background: var(--input-bg);
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .photo-upload-box:hover { border-color: var(--border-focus); }
+        .photo-upload-box.has-photo { padding: 0; overflow: hidden; cursor: default; }
+
+        .photo-upload-box .upload-hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .photo-upload-box .upload-icon { font-size: 1.6rem; margin-bottom: 6px; }
+
+        .photo-preview-wrap { position: relative; }
+
+        .photo-preview {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .photo-remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-remove-btn:hover { background: rgba(0,0,0,0.8); }
+
+        /* Voice Recorder */
+        .voice-recorder-box {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--input-bg);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .record-btn {
+            flex-shrink: 0;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary);
+            color: #1a1a1a;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .record-btn:hover { background: var(--primary-hover); }
+
+        .record-btn.recording {
+            background: var(--error);
+            color: #fff;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+
+        .voice-status {
+            flex: 1;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .voice-status.active { color: var(--text-primary); }
+
+        .voice-player {
+            flex: 1;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .voice-player.show { display: flex; }
+
+        .voice-player audio { flex: 1; height: 36px; }
+
+        .voice-remove-btn {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--border);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .voice-remove-btn:hover { background: var(--error); color: #fff; }
+    </style>
+<base target="_blank">
+</head>
+<body data-theme="light">
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode">🌙</button>
+
+    <div class="header">
+        <img src="Carrybee Logo-04.png" alt="Carrybee" class="logo" onerror="this.style.display='none'">
+        <div class="divider"></div>
+        <h1 class="title">Issue Escalation Form</h1>
+    </div>
+
+    <div class="form-container">
+        <form id="escalationForm">
+            <div class="form-group">
+                <label for="consignmentId">Consignment ID <span class="required">*</span></label>
+                <input type="text" id="consignmentId" name="consignmentId" placeholder="e.g. CB-2024-001234" required>
+            </div>
+
+            <div class="form-group">
+                <label for="merchantName">Merchant Name <span class="required">*</span></label>
+                <input type="text" id="merchantName" name="merchantName" placeholder="Your business name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="merchantPhone">Merchant Phone (Reg. Number) <span class="required">*</span></label>
+                <input type="text" id="merchantPhone" name="merchantPhone" placeholder="e.g. 01712345678" inputmode="numeric" maxlength="11"
+                    oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,11)" required>
+            </div>
+
+            <div class="form-group">
+                <label for="issueTag">Issue Tag <span class="required">*</span></label>
+                <select id="issueTag" name="issueTag" required>
+                    <option value="" disabled selected>— Select issue category —</option>
+                    <option value="Delivery Delay">Delivery Delay (দেরিতে ডেলিভারির ইস্যু)</option>
+                    <option value="Pickup Missed">Pickup Missed (পিকআপ মিস হয়েছে)</option>
+                    <option value="Urgent Delivery">Urgent Delivery(দ্রুত ডেলিভারি রিকোয়েস্ট)</option>
+                    <option value="Fake Hold">Fake Hold (ফেইক হোল্ড)</option>
+                    <option value="Fake Return">Fake Return(ফেইক রিটার্ন)</option>
+                    <option value="COD Update Request">COD Update Request(COD আপডেট অনুরোধ)</option>
+                    <option value="Address Change">Address Change(ঠিকানা পরিবর্তন)</option>
+                    <option value="Phone Number Change">Phone Number Change(ফোন নম্বর পরিবর্তন)</option>
+                    <option value="Wrong COD/Delivery Charge Collection">Wrong COD/Delivery Charge Collection(ভুল COD/ডেলিভারি চার্জ সংগ্রহ)</option>
+                    <option value="Rider Misbehave">Rider Misbehave(রাইডারের অসদাচরণ)</option>
+                    <option value="Return Not Found">Return Not Found(রির্টান পাওয়া যায়নি)</option>
+                    <option value="Return Not Found">No Entry Parcel Issues(নো এন্ট্রি পার্সেলের সমস্যা)</option>
+                    <option value="Other">Other(অন্যান্য)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="issueDetails">Issue Details <span class="required">*</span></label>
+                <textarea id="issueDetails" name="issueDetails" placeholder="Describe the issue clearly — include dates, recipient info, or any other relevant context..." required minlength="20"></textarea>
+                <div class="hint">Minimum 20 characters. Be as specific as possible.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="photoInput">Photo <span style="color: var(--text-muted); text-transform: none; letter-spacing: 0; font-weight: 400;">(optional)</span></label>
+                <div class="photo-upload-box" id="photoUploadBox">
+                    <div id="photoPlaceholder">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-hint">Tap to take a photo or choose from gallery</div>
+                    </div>
+                    <div class="photo-preview-wrap" id="photoPreviewWrap" style="display:none;">
+                        <img id="photoPreview" class="photo-preview" alt="Photo preview">
+                        <button type="button" class="photo-remove-btn" id="photoRemoveBtn" title="Remove photo">✕</button>
+                    </div>
+                </div>
+                <input type="file" id="photoInput" name="photoInput" accept="image/*" capture="environment" style="display:none;">
+            </div>
+
+            <div class="form-group">
+                <label for="voiceRecordBtn">Voice Message <span style="color: var(--text-muted); text-transform: none; letter-spacing: 0; font-weight: 400;">(optional)</span></label>
+                <div class="voice-recorder-box">
+                    <button type="button" class="record-btn" id="voiceRecordBtn" title="Record voice message">🎙️</button>
+                    <div class="voice-status" id="voiceStatus">Tap to record a voice message</div>
+                    <div class="voice-player" id="voicePlayerWrap">
+                        <audio id="voicePlayer" controls></audio>
+                        <button type="button" class="voice-remove-btn" id="voiceRemoveBtn" title="Remove recording">✕</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button type="submit" class="submit-btn" id="submitBtn">Submit Issue</button>
+                <button type="button" class="call-btn" id="openCallModalBtn">📞 Request For Call</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Truck Loading Overlay -->
+    <div class="truck-loading-overlay" id="truckLoadingOverlay">
+        <div class="truck-loading-card">
+            <div class="loader">
+                <div class="truckWrapper">
+                    <div class="truckBody">
+                        <svg viewBox="0 0 198 93" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="2" y="10" width="120" height="55" rx="6" fill="var(--primary)"/>
+                            <rect x="10" y="18" width="104" height="6" rx="3" fill="rgba(0,0,0,0.15)"/>
+                            <path d="M122 30 h34 a10 10 0 0 1 9 5.5 l14 21 a8 8 0 0 1 -7 12 h-50 z" fill="#1c1e22"/>
+                            <path d="M132 38 h20 a6 6 0 0 1 5 3 l8 12 h-33 z" fill="#cfeaff"/>
+                            <rect x="176" y="58" width="10" height="10" rx="2" fill="#2d2d2d"/>
+                            <circle cx="182" cy="52" r="3" fill="#fff59d"/>
+                        </svg>
+                    </div>
+                    <div class="truckTires">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="20" cy="20" r="18" fill="#2d2d2d"/>
+                            <circle cx="20" cy="20" r="8" fill="#bbb"/>
+                            <circle cx="20" cy="20" r="3" fill="#2d2d2d"/>
+                        </svg>
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="20" cy="20" r="18" fill="#2d2d2d"/>
+                            <circle cx="20" cy="20" r="8" fill="#bbb"/>
+                            <circle cx="20" cy="20" r="3" fill="#2d2d2d"/>
+                        </svg>
+                    </div>
+                    <div class="truckRoad"></div>
+                </div>
+            </div>
+            <div class="truck-loading-text">Sending your issue to the team...</div>
+        </div>
+    </div>
+
+    <!-- Success Popup Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <div class="modal-icon">✓</div>
+            <div class="modal-title">Issue Submitted!</div>
+            <div class="modal-message">Your issue has been raised & we are working on the issue. Updates will be provided soon.</div>
+            <button class="modal-btn" id="modalCloseBtn">Got it</button>
+        </div>
+    </div>
+
+    <!-- Request For Call Modal -->
+    <div class="modal-overlay" id="callModal">
+        <div class="call-modal-content">
+            <div class="call-modal-title">Request For Call</div>
+            <div class="call-modal-subtitle">Tell us briefly why you need the AD team to call you. We'll reach out shortly.</div>
+            <form id="callForm">
+                <div class="form-group">
+                    <label for="callMerchantName">Merchant Name <span class="required">*</span></label>
+                    <input type="text" id="callMerchantName" name="callMerchantName" placeholder="Your business name" required>
+                </div>
+                <div class="form-group">
+                    <label for="callReason">Reason For Call <span class="required">*</span></label>
+                    <textarea id="callReason" name="callReason" placeholder="Briefly describe why you need a call from the AD team..." required minlength="10" style="min-height: 90px;"></textarea>
+                </div>
+                <div class="call-modal-actions">
+                    <button type="button" class="cancel-btn" id="closeCallModalBtn">Cancel</button>
+                    <button type="submit" class="submit-btn" id="callSubmitBtn">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer">
+        Developed by <a href="#">Ahmed Asif Rashid</a> And <a href="#">Nahid</a>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const BOT_TOKEN = "8669705066:AAHuKUG2-a1DkZ-1tK60aIqp51q_o1K81Oo";
+        // Your CarryBee backend (Express + Turso). Change this to your deployed Render URL.
+        const API_BASE_URL = "https://merchant-issues-escalation-databash.onrender.com";
+
+        const RECIPIENTS = [
+            { id: "8485545697", name: "Nahid" },
+            { id: "8839924588", name: "Ahmed" },
+            { id: "8929987215", name: "Solayman" }
+        ];
+
+        // Merchant grouping sheet, published as CSV — same source and column
+        // layout (D=Assigned Group, E=Whatsapp Number, F=Reg Phone) already
+        // used by the KAM dashboard, so Group/Phone here will always match what
+        // the dashboard shows. Matched by Reg Phone (not Business Name) since
+        // business names have dupes/typos across merchants, phone doesn't.
+        const ADM_GROUP_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTuapDC5l3Klr5XdcIf8ptsTMAkAkM38Zc6PdqlQj1-AzSCYgkSHU_pTcD6z35kq9B5hfzx5dnjbYrD/pub?output=csv';
+
+        let adGroupCache = null;
+
+        function parseCSV(text) {
+            const rows = [];
+            let row = [];
+            let field = '';
+            let inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                if (inQuotes) {
+                    if (c === '"') {
+                        if (text[i + 1] === '"') { field += '"'; i++; }
+                        else { inQuotes = false; }
+                    } else {
+                        field += c;
+                    }
+                } else if (c === '"') {
+                    inQuotes = true;
+                } else if (c === ',') {
+                    row.push(field); field = '';
+                } else if (c === '\n' || c === '\r') {
+                    if (c === '\r' && text[i + 1] === '\n') i++;
+                    row.push(field); field = '';
+                    if (row.length > 1 || row[0] !== '') rows.push(row);
+                    row = [];
+                } else {
+                    field += c;
+                }
+            }
+            if (field !== '' || row.length) { row.push(field); rows.push(row); }
+            return rows;
+        }
+
+        // Cleans up the free-typed "Whatsapp Number" column (mixes of
+        // "0 1790-017606", "880 1863-718678", "01918-322307", bare 10-digit
+        // numbers, etc.) into a consistent BD digit string for tel:/wa.me links.
+        function normalizeBdPhone(raw) {
+            const original = String(raw || '').trim();
+            let digits = original.replace(/[^\d]/g, '');
+            if (!digits) return null;
+            if (digits.startsWith('880')) {
+                // already has country code
+            } else if (digits.startsWith('0')) {
+                digits = '880' + digits.slice(1);
+            } else if (digits.length === 10) {
+                digits = '880' + digits;
+            } else {
+                digits = '880' + digits.replace(/^880/, '');
+            }
+            return { display: original, digits };
+        }
+
+        async function fetchMerchantInfo(merchantPhone, merchantName) {
+            try {
+                if (!adGroupCache) {
+                    const response = await fetch(ADM_GROUP_CSV_URL);
+                    if (!response.ok) throw new Error(`Group CSV responded ${response.status}`);
+                    const text = await response.text();
+                    const rows = parseCSV(text).slice(1);
+                    const byPhone = new Map();
+                    const byName = new Map();
+                    rows.forEach(r => {
+                        const info = { group: r[3], phone: r[4] };
+                        if (r[5]) {
+                            const regPhone = normalizeBdPhone(r[5]);
+                            if (regPhone) byPhone.set(regPhone.digits, info);
+                        }
+                        if (r[1]) {
+                            byName.set(String(r[1]).trim().toLowerCase(), info);
+                        }
+                    });
+                    adGroupCache = { byPhone, byName };
+                }
+
+                let entry = null;
+                const enteredPhone = normalizeBdPhone(merchantPhone);
+                if (enteredPhone) entry = adGroupCache.byPhone.get(enteredPhone.digits);
+                if (!entry) {
+                    const nameKey = String(merchantName || '').trim().toLowerCase();
+                    if (nameKey) entry = adGroupCache.byName.get(nameKey);
+                }
+                if (!entry) return { group: 'N/A', whatsapp: 'N/A' };
+
+                const phone = entry.phone ? normalizeBdPhone(entry.phone) : null;
+                return {
+                    group: entry.group || 'N/A',
+                    whatsapp: phone ? phone.display : 'N/A'
+                };
+            } catch (err) {
+                console.error('Merchant lookup failed:', err);
+                return { group: 'N/A', whatsapp: 'N/A' };
+            }
+        }
+
+        // ============================================
+        // PHOTO UPLOAD
+        // ============================================
+        let selectedPhotoFile = null;
+        const MAX_ATTACHMENT_MB = 20;
+
+        const photoUploadBox = document.getElementById('photoUploadBox');
+        const photoInput = document.getElementById('photoInput');
+        const photoPlaceholder = document.getElementById('photoPlaceholder');
+        const photoPreviewWrap = document.getElementById('photoPreviewWrap');
+        const photoPreview = document.getElementById('photoPreview');
+        const photoRemoveBtn = document.getElementById('photoRemoveBtn');
+
+        photoUploadBox.addEventListener('click', (e) => {
+            if (e.target === photoRemoveBtn) return;
+            if (!selectedPhotoFile) photoInput.click();
+        });
+
+        photoInput.addEventListener('change', () => {
+            const file = photoInput.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select an image file.', 'error');
+                photoInput.value = '';
+                return;
+            }
+            if (file.size > MAX_ATTACHMENT_MB * 1024 * 1024) {
+                showToast(`Photo is too large. Max ${MAX_ATTACHMENT_MB}MB.`, 'error');
+                photoInput.value = '';
+                return;
+            }
+
+            selectedPhotoFile = file;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                photoPreview.src = ev.target.result;
+                photoPlaceholder.style.display = 'none';
+                photoPreviewWrap.style.display = 'block';
+                photoUploadBox.classList.add('has-photo');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function resetPhoto() {
+            selectedPhotoFile = null;
+            photoInput.value = '';
+            photoPreview.src = '';
+            photoPlaceholder.style.display = '';
+            photoPreviewWrap.style.display = 'none';
+            photoUploadBox.classList.remove('has-photo');
+        }
+
+        photoRemoveBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetPhoto();
+        });
+
+        // ============================================
+        // VOICE RECORDER
+        // ============================================
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordedBlob = null;
+        let recordingStream = null;
+        let recordingSeconds = 0;
+        let recordingTimer = null;
+
+        const voiceRecordBtn = document.getElementById('voiceRecordBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const voicePlayerWrap = document.getElementById('voicePlayerWrap');
+        const voicePlayer = document.getElementById('voicePlayer');
+        const voiceRemoveBtn = document.getElementById('voiceRemoveBtn');
+
+        function formatSeconds(s) {
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = (s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        async function startRecording() {
+            if (!navigator.mediaDevices || !window.MediaRecorder) {
+                showToast('Voice recording is not supported in this browser.', 'error');
+                return;
+            }
+            try {
+                recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err) {
+                showToast('Microphone access denied. Please allow mic access to record.', 'error');
+                return;
+            }
+
+            recordedChunks = [];
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                ? 'audio/webm;codecs=opus'
+                : (MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '');
+            mediaRecorder = mimeType ? new MediaRecorder(recordingStream, { mimeType }) : new MediaRecorder(recordingStream);
+
+            mediaRecorder.addEventListener('dataavailable', (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            });
+
+            mediaRecorder.addEventListener('stop', () => {
+                recordedBlob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                voicePlayer.src = URL.createObjectURL(recordedBlob);
+                voicePlayerWrap.classList.add('show');
+                voiceStatus.style.display = 'none';
+                recordingStream.getTracks().forEach(t => t.stop());
+                recordingStream = null;
+            });
+
+            mediaRecorder.start();
+            recordingSeconds = 0;
+            voiceRecordBtn.classList.add('recording');
+            voiceRecordBtn.textContent = '⏹️';
+            voiceStatus.classList.add('active');
+            voiceStatus.textContent = `Recording… 00:00`;
+            recordingTimer = setInterval(() => {
+                recordingSeconds++;
+                voiceStatus.textContent = `Recording… ${formatSeconds(recordingSeconds)}`;
+            }, 1000);
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            clearInterval(recordingTimer);
+            voiceRecordBtn.classList.remove('recording');
+            voiceRecordBtn.textContent = '🎙️';
+            voiceStatus.classList.remove('active');
+        }
+
+        voiceRecordBtn.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+
+        function resetVoice() {
+            recordedBlob = null;
+            recordedChunks = [];
+            voicePlayer.src = '';
+            voicePlayerWrap.classList.remove('show');
+            voiceStatus.style.display = '';
+            voiceStatus.textContent = 'Tap to record a voice message';
+        }
+
+        voiceRemoveBtn.addEventListener('click', resetVoice);
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        themeToggle.addEventListener('click', () => {
+            const current = body.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', next);
+            themeToggle.textContent = next === 'light' ? '🌙' : '☀️';
+        });
+
+        const form = document.getElementById('escalationForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const toast = document.getElementById('toast');
+        const successModal = document.getElementById('successModal');
+        const truckLoadingOverlay = document.getElementById('truckLoadingOverlay');
+
+        function showTruckLoader() {
+            truckLoadingOverlay.classList.add('show');
+        }
+
+        function hideTruckLoader() {
+            truckLoadingOverlay.classList.remove('show');
+        }
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        function showSuccessModal() {
+            successModal.classList.add('show');
+        }
+
+        function hideSuccessModal() {
+            successModal.classList.remove('show');
+        }
+
+        modalCloseBtn.addEventListener('click', hideSuccessModal);
+        successModal.addEventListener('click', (e) => {
+            if (e.target === successModal) hideSuccessModal();
+        });
+
+        // ============================================
+        // REQUEST FOR CALL MODAL
+        // ============================================
+        const callModal = document.getElementById('callModal');
+        const openCallModalBtn = document.getElementById('openCallModalBtn');
+        const closeCallModalBtn = document.getElementById('closeCallModalBtn');
+        const callForm = document.getElementById('callForm');
+        const callSubmitBtn = document.getElementById('callSubmitBtn');
+
+        function showCallModal() {
+            // Pre-fill merchant name from the main form if already entered
+            const mainMerchantName = document.getElementById('merchantName').value.trim();
+            if (mainMerchantName) {
+                document.getElementById('callMerchantName').value = mainMerchantName;
+            }
+            callModal.classList.add('show');
+        }
+
+        function hideCallModal() {
+            callModal.classList.remove('show');
+        }
+
+        openCallModalBtn.addEventListener('click', showCallModal);
+        closeCallModalBtn.addEventListener('click', hideCallModal);
+        callModal.addEventListener('click', (e) => {
+            if (e.target === callModal) hideCallModal();
+        });
+
+        callForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const reason = document.getElementById('callReason').value.trim();
+            if (reason.length < 10) {
+                showToast('Please provide at least 10 characters describing the reason.', 'error');
+                return;
+            }
+
+            const originalText = callSubmitBtn.textContent;
+            callSubmitBtn.disabled = true;
+            callSubmitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+
+            const callPayload = {
+                merchantName: document.getElementById('callMerchantName').value.trim(),
+                reason: reason
+            };
+
+            const telegramMessage = `📞 *Carrybee Call Request*
+
+🏪 *Merchant:* ${escapeMarkdown(callPayload.merchantName)}
+📝 *Reason:* ${escapeMarkdown(callPayload.reason)}`;
+
+            try {
+                const telegramPromises = RECIPIENTS.map(async (recipient) => {
+                    try {
+                        const result = await sendTelegramMessage(recipient.id, telegramMessage);
+                        return { name: recipient.name, ok: result.ok === true, error: result.description };
+                    } catch (err) {
+                        return { name: recipient.name, ok: false, error: err.message };
+                    }
+                });
+
+                const telegramResults = await Promise.all(telegramPromises);
+                const allTelegramOk = telegramResults.every(r => r.ok);
+
+                if (allTelegramOk) {
+                    hideCallModal();
+                    callForm.reset();
+                    showToast('✅ Call request sent! The AD team will call you shortly.', 'success');
+                } else {
+                    const failed = telegramResults.filter(r => !r.ok).map(r => `${r.name}: ${r.error}`).join(', ');
+                    showToast('⚠️ Call request may have failed: ' + failed, 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('❌ Failed to send call request. Check console.', 'error');
+            } finally {
+                callSubmitBtn.disabled = false;
+                callSubmitBtn.textContent = originalText;
+            }
+        });
+
+        async function sendTelegramMessage(chatId, text) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: text,
+                    parse_mode: 'Markdown'
+                })
+            });
+            return response.json();
+        }
+
+        // Telegram's legacy Markdown parser breaks the whole message if a dynamic
+        // value (merchant name, details, etc.) contains an unescaped _, *, `, or [.
+        // Escape those in any user-supplied/fetched text before it goes into a
+        // Markdown-formatted template string.
+        function escapeMarkdown(text) {
+            if (text === null || text === undefined) return '';
+            return String(text).replace(/([_*`\[])/g, '\\$1');
+        }
+
+        async function sendTelegramPhoto(chatId, file, caption) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('caption', caption);
+            formData.append('photo', file, file.name || 'photo.jpg');
+            const response = await fetch(url, { method: 'POST', body: formData });
+            return response.json();
+        }
+
+        async function sendTelegramVoice(chatId, blob, caption) {
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendAudio`;
+            const formData = new FormData();
+            formData.append('chat_id', chatId);
+            formData.append('caption', caption);
+            const ext = (blob.type || '').includes('mp4') ? 'm4a' : 'webm';
+            formData.append('audio', blob, `voice-message.${ext}`);
+            const response = await fetch(url, { method: 'POST', body: formData });
+            return response.json();
+        }
+
+        async function sendAttachmentsToRecipients(caption) {
+            const jobs = [];
+            RECIPIENTS.forEach((recipient) => {
+                if (selectedPhotoFile) {
+                    jobs.push(sendTelegramPhoto(recipient.id, selectedPhotoFile, caption).catch(() => null));
+                }
+                if (recordedBlob) {
+                    jobs.push(sendTelegramVoice(recipient.id, recordedBlob, caption).catch(() => null));
+                }
+            });
+            if (jobs.length) await Promise.all(jobs);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const details = document.getElementById('issueDetails').value;
+            if (details.trim().length < 20) {
+                showToast('Please provide at least 20 characters in Issue Details.', 'error');
+                return;
+            }
+
+            const merchantPhoneRaw = document.getElementById('merchantPhone').value.trim();
+            const merchantPhoneDigits = merchantPhoneRaw.replace(/[^\d]/g, '');
+            if (merchantPhoneDigits.length !== 11) {
+                showToast('Merchant phone must be exactly 11 digits (e.g. 01712345678)', 'error');
+                return;
+            }
+            const normalizedMerchantPhone = normalizeBdPhone(merchantPhoneRaw);
+            if (!normalizedMerchantPhone) {
+                showToast('Please enter a valid merchant phone number.', 'error');
+                return;
+            }
+
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+            showTruckLoader();
+
+            const payload = {
+                consignmentId: document.getElementById('consignmentId').value.trim(),
+                merchantName: document.getElementById('merchantName').value.trim(),
+                merchantPhone: normalizedMerchantPhone.digits,
+                issueTag: document.getElementById('issueTag').value,
+                issueDetails: details.trim()
+            };
+
+            const merchantInfo = await fetchMerchantInfo(payload.merchantPhone, payload.merchantName);
+
+            const telegramMessage = `🚨 *Carrybee Issue Escalation*
+
+📦 *Consignment:* ${escapeMarkdown(payload.consignmentId)}
+🏪 *Merchant:* ${escapeMarkdown(payload.merchantName)}
+📱 *Number:* ${escapeMarkdown(merchantInfo.whatsapp)}
+👥 *Group:* ${escapeMarkdown(merchantInfo.group)}
+🏷️ *Category:* ${escapeMarkdown(payload.issueTag)}
+📝 *Details:* ${escapeMarkdown(payload.issueDetails)}`;
+
+            let dbSuccess = false;
+            let telegramResults = [];
+
+            try {
+                // 1. Save to the database (this is what the dashboard reads)
+                try {
+                    const dbResponse = await fetch(`${API_BASE_URL}/api/issues`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!dbResponse.ok) {
+                        const errBody = await dbResponse.json().catch(() => ({}));
+                        throw new Error(errBody.error || `Server responded ${dbResponse.status}`);
+                    }
+                    dbSuccess = true;
+                } catch (dbErr) {
+                    console.error('Database save error:', dbErr);
+                    showToast('⚠️ Could not save to database: ' + dbErr.message, 'error');
+                }
+
+                // 2. Send Telegram notifications
+                const telegramPromises = RECIPIENTS.map(async (recipient) => {
+                    try {
+                        const result = await sendTelegramMessage(recipient.id, telegramMessage);
+                        return { name: recipient.name, ok: result.ok === true, error: result.description };
+                    } catch (err) {
+                        return { name: recipient.name, ok: false, error: err.message };
+                    }
+                });
+
+                telegramResults = await Promise.all(telegramPromises);
+                const allTelegramOk = telegramResults.every(r => r.ok);
+
+                // 3. Send photo / voice attachments, if any, as a follow-up to each recipient
+                if (selectedPhotoFile || recordedBlob) {
+                    const attachmentCaption = `📎 Attachment for ${payload.consignmentId} — ${payload.merchantName}`;
+                    await sendAttachmentsToRecipients(attachmentCaption);
+                }
+
+                if (dbSuccess) {
+                    showSuccessModal();
+                    form.reset();
+                    resetPhoto();
+                    resetVoice();
+                    if (!allTelegramOk) {
+                        const failed = telegramResults.filter(r => !r.ok).map(r => `${r.name}: ${r.error}`).join(', ');
+                        showToast('⚠️ Saved, but Telegram alert failed: ' + failed, 'error');
+                    }
+                } else if (allTelegramOk) {
+                    showToast('⚠️ Telegram alert sent, but database save failed. Please check with the team.', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('❌ Failed to submit. Check console.', 'error');
+            } finally {
+                hideTruckLoader();
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+</html>
